@@ -7,7 +7,8 @@
 //
 
 #import "OCThumbor.h"
-#import "CocoaSecurity.h"
+
+#import <CocoaSecurity/CocoaSecurity.h>
 
 NSString * const THUMBOR_PREFIX_UNSAFE          = @"unsafe/";
 NSString * const THUMBOR_PREFIX_META            = @"meta/";
@@ -499,7 +500,7 @@ NSString * const IMAGE_FORMAT_WEBP  = @"webp";
     if (builder == nil) {
         @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"Builder must not be null." userInfo:nil];
     }
-    return [OCThumborURLBuilder watermark:[builder stringValue] x:x y:y transparency:0];
+    return [OCThumborURLBuilder watermark:[builder toUrl] x:x y:y transparency:0];
 }
 
 + (NSString *)watermarkWithBuilder:(OCThumborURLBuilder *)builder {
@@ -510,7 +511,7 @@ NSString * const IMAGE_FORMAT_WEBP  = @"webp";
     if (builder == nil) {
         @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"Builder must not be null." userInfo:nil];
     }
-    return [OCThumborURLBuilder watermark:[builder stringValue] x:x y:y transparency:transparency];
+    return [OCThumborURLBuilder watermark:[builder toUrl] x:x y:y transparency:transparency];
 }
 
 + (NSString *)sharpen:(double)amount radius:(double)radius luminanceOnly:(BOOL)luminanceOnly {
@@ -563,16 +564,6 @@ NSString * const IMAGE_FORMAT_WEBP  = @"webp";
 
 + (NSString *)equalize {
     return [NSString stringWithFormat:@"%@()", THUMBOR_FILTER_EQUALIZE];
-}
-
-#pragma mark - Building Methods
-
-- (NSString *)stringValue {
-    return @"";
-}
-
-- (NSURL *)URLValue {
-    return [NSURL URLWithString:[self stringValue]];
 }
 
 @end

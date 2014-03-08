@@ -21,6 +21,7 @@
 		65DC494818CBB2B600E773AC /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 65DC492A18CBB2B600E773AC /* UIKit.framework */; };
 		65DC495018CBB2B600E773AC /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 65DC494E18CBB2B600E773AC /* InfoPlist.strings */; };
 		65DC495218CBB2B600E773AC /* OCThumborExampleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 65DC495118CBB2B600E773AC /* OCThumborExampleTests.m */; };
+		CD00DEDD63B1429BA026C60C /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 28B034695D20488485DE04FC /* libPods.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -34,6 +35,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		28B034695D20488485DE04FC /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		65DC492318CBB2B600E773AC /* OCThumborExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OCThumborExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		65DC492618CBB2B600E773AC /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		65DC492818CBB2B600E773AC /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -53,6 +55,7 @@
 		65DC494D18CBB2B600E773AC /* OCThumborExampleTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "OCThumborExampleTests-Info.plist"; sourceTree = "<group>"; };
 		65DC494F18CBB2B600E773AC /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		65DC495118CBB2B600E773AC /* OCThumborExampleTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OCThumborExampleTests.m; sourceTree = "<group>"; };
+		6D3EFE90CE8E44A69A9C4C85 /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,6 +66,7 @@
 				65DC492918CBB2B600E773AC /* CoreGraphics.framework in Frameworks */,
 				65DC492B18CBB2B600E773AC /* UIKit.framework in Frameworks */,
 				65DC492718CBB2B600E773AC /* Foundation.framework in Frameworks */,
+				CD00DEDD63B1429BA026C60C /* libPods.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -86,6 +90,7 @@
 				65DC494B18CBB2B600E773AC /* OCThumborExampleTests */,
 				65DC492518CBB2B600E773AC /* Frameworks */,
 				65DC492418CBB2B600E773AC /* Products */,
+				6D3EFE90CE8E44A69A9C4C85 /* Pods.xcconfig */,
 			);
 			sourceTree = "<group>";
 		};
@@ -105,6 +110,7 @@
 				65DC492818CBB2B600E773AC /* CoreGraphics.framework */,
 				65DC492A18CBB2B600E773AC /* UIKit.framework */,
 				65DC494518CBB2B600E773AC /* XCTest.framework */,
+				28B034695D20488485DE04FC /* libPods.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -159,9 +165,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 65DC495518CBB2B600E773AC /* Build configuration list for PBXNativeTarget "OCThumborExample" */;
 			buildPhases = (
+				A97E14F3DA7E4D778DEAEB29 /* Check Pods Manifest.lock */,
 				65DC491F18CBB2B600E773AC /* Sources */,
 				65DC492018CBB2B600E773AC /* Frameworks */,
 				65DC492118CBB2B600E773AC /* Resources */,
+				83CBABB07F4346E3B9B4A2AD /* Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -243,6 +251,39 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		83CBABB07F4346E3B9B4A2AD /* Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Pods-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		A97E14F3DA7E4D778DEAEB29 /* Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		65DC491F18CBB2B600E773AC /* Sources */ = {
@@ -375,6 +416,7 @@
 		};
 		65DC495618CBB2B600E773AC /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6D3EFE90CE8E44A69A9C4C85 /* Pods.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
@@ -388,6 +430,7 @@
 		};
 		65DC495718CBB2B600E773AC /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6D3EFE90CE8E44A69A9C4C85 /* Pods.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
@@ -460,6 +503,7 @@
 				65DC495718CBB2B600E773AC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		65DC495818CBB2B600E773AC /* Build configuration list for PBXNativeTarget "OCThumborExampleTests" */ = {
 			isa = XCConfigurationList;
@@ -468,6 +512,7 @@
 				65DC495A18CBB2B600E773AC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

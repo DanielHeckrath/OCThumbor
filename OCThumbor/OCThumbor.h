@@ -118,20 +118,13 @@ typedef NS_ENUM(NSUInteger, ThumborImageFormat) {
 
 - (instancetype)filterFromArray:(NSArray *)filters;
 
-/**
- Create the NSString representation of this thumbor url
- 
- @return string based on input values
- */
-- (NSString *)stringValue;
+- (NSString *)toUrl;
+- (NSString *)toUrlUnsafe;
+- (NSString *)toUrlSafe;
 
-/**
- Creates the NSURL representation of this thumbor url
- 
- @return url based on input values
- */
-- (NSURL *)URLValue;
-
+- (NSString *)toMeta;
+- (NSString *)toMetaUnsafe;
+- (NSString *)toMetaSafe;
 
 #pragma mark - Filter Methods
 

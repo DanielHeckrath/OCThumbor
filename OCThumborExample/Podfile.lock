@@ -1,0 +1,17 @@
+PODS:
+  - CocoaSecurity (1.2.3)
+  - OCThumbor (0.1.0):
+    - CocoaSecurity (~> 1.2)
+
+DEPENDENCIES:
+  - OCThumbor (from `../OCThumbor.podspec`)
+
+EXTERNAL SOURCES:
+  OCThumbor:
+    :path: ../OCThumbor.podspec
+
+SPEC CHECKSUMS:
+  CocoaSecurity: 9c82f530dc5b0516b04cc2ed4c2f5cd90f25352d
+  OCThumbor: b754b242cf0dc15f9d0161c2984caa658bd687fe
+
+COCOAPODS: 0.29.0

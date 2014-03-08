@@ -1,0 +1,1 @@
+pod "OCThumbor", :path => "../OCThumbor.podspec"
