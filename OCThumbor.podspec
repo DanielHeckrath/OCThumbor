@@ -1,23 +1,14 @@
-#
-# Be sure to run `pod spec lint NAME.podspec' to ensure this is a
-# valid spec and remove all comments before submitting the spec.
-#
-# To learn more about the attributes see http://guides.cocoapods.org/syntax/podspec.html
-#
 Pod::Spec.new do |s|
   s.name             = "OCThumbor"
-  s.version          = "0.1.0"
-  s.summary          = "A short description of OCThumbor."
+  s.version          = "0.0.1"
+  s.summary          = "Objective-C client for the Thumbor image service which allows you to build URIs in an expressive fashion using a fluent API"
   s.description      = <<-DESC
-                       An optional longer description of OCThumbor
-
-                       * Markdown format.
-                       * Don't worry about the indent, we strip it!
+                       Objective-C client for the [Thumbor image service](https://github.com/globocom/thumbor) which allows you to build URIs in an expressive fashion using a fluent API.
                        DESC
   s.homepage         = "https://github.com/DanielHeckrath/OCThumbor.git"
   s.license          = 'MIT'
   s.author           = { "Daniel Heckrath" => "daniel@codeserv.de" }
-  s.source           = { :git => "https://github.com/DanielHeckrath/OCThumbor.git", :tag => '#{s.version}' }
+  s.source           = { :git => "https://github.com/DanielHeckrath/OCThumbor.git", :tag => '0.0.1' }
   s.social_media_url = 'https://twitter.com/tchackie'
 
   s.requires_arc = true

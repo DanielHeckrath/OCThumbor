@@ -225,7 +225,7 @@ NSString * const IMAGE_FORMAT_WEBP  = @"webp";
     return [self trim:trimColor withTolerance:0];
 }
 
-- (instancetype)trim:(ThumborTrimPixelColor)trimColor withTolerance:(NSUInteger)tolerance {
+- (instancetype)trim:(ThumborTrimPixelColor)trimColor withTolerance:(int)tolerance {
     NSString *trimColorString;
     switch (trimColor) {
         case ThumborTrimPixelColorTopLeft:
@@ -241,8 +241,8 @@ NSString * const IMAGE_FORMAT_WEBP  = @"webp";
     return [self trimWithColorString:trimColorString tolerance:tolerance];
 }
 
-- (instancetype)trimWithColorString:(NSString *)trimColor tolerance:(NSUInteger)tolerance {
-    if (tolerance > 442) {
+- (instancetype)trimWithColorString:(NSString *)trimColor tolerance:(int)tolerance {
+    if (tolerance < 0 || tolerance > 442) {
         @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"Color tolerance must be between 0 and 442." userInfo:nil];
     }
     if (tolerance > 0 && trimColor == nil) {
@@ -407,28 +407,28 @@ NSString * const IMAGE_FORMAT_WEBP  = @"webp";
 
 #pragma mark - Filter Methods
 
-+ (NSString *)brightness:(NSInteger)amount {
++ (NSString *)brightness:(int)amount {
     if (amount < -100 || amount > 100) {
         @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"Amount must be between -100 and 100, inclusive." userInfo:nil];
     }
     return [NSString stringWithFormat:@"%@(%d)", THUMBOR_FILTER_BRIGHTNESS, amount];
 }
 
-+ (NSString *)contrast:(NSInteger)amount {
++ (NSString *)contrast:(int)amount {
     if (amount < -100 || amount > 100) {
         @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"Amount must be between -100 and 100, inclusive." userInfo:nil];
     }
     return [NSString stringWithFormat:@"%@(%d)", THUMBOR_FILTER_CONTRAST, amount];
 }
 
-+ (NSString *)noise:(NSInteger)amount {
++ (NSString *)noise:(int)amount {
     if (amount < 0 || amount > 100) {
         @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"Amount must be between 0 and 100, inclusive." userInfo:nil];
     }
     return [NSString stringWithFormat:@"%@(%d)", THUMBOR_FILTER_NOISE, amount];
 }
 
-+ (NSString *)quality:(NSInteger)amount {
++ (NSString *)quality:(int)amount {
     if (amount < 0 || amount > 100) {
         @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"Amount must be between 0 and 100, inclusive." userInfo:nil];
     }
@@ -469,8 +469,8 @@ NSString * const IMAGE_FORMAT_WEBP  = @"webp";
         [builder appendFormat:@"|%d", radiusOuter];
     }
     
-    int r = ((NSUInteger)(color & 0xFF0000)) >> 16;
-    int g = ((NSUInteger)(color & 0xFF00)) >> 8;
+    int r = (color & 0xFF0000) >> 16;
+    int g = (color & 0xFF00) >> 8;
     int b = color & 0xFF;
     
     [builder appendFormat:@"%d,%d,%d)", r, g, b];

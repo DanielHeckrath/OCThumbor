@@ -110,7 +110,7 @@ typedef NS_ENUM(NSUInteger, ThumborImageFormat) {
 
 - (instancetype)trim:(ThumborTrimPixelColor)trimColor;
 
-- (instancetype)trim:(ThumborTrimPixelColor)trimColor withTolerance:(NSUInteger)tolerance;
+- (instancetype)trim:(ThumborTrimPixelColor)trimColor withTolerance:(int)tolerance;
 
 - (instancetype)legacy;
 
@@ -128,10 +128,10 @@ typedef NS_ENUM(NSUInteger, ThumborImageFormat) {
 
 #pragma mark - Filter Methods
 
-+ (NSString *)brightness:(NSInteger)amount;
-+ (NSString *)contrast:(NSInteger)amount;
-+ (NSString *)noise:(NSInteger)amount;
-+ (NSString *)quality:(NSInteger)amount;
++ (NSString *)brightness:(int)amount;
++ (NSString *)contrast:(int)amount;
++ (NSString *)noise:(int)amount;
++ (NSString *)quality:(int)amount;
 + (NSString *)red:(int)red green:(int)green blue:(int)blue;
 + (NSString *)roundCorner:(int)radius;
 + (NSString *)roundCorner:(int)radius color:(int)color;
