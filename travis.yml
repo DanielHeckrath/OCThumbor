@@ -1,3 +1,0 @@
-language: objective-c
-xcode_workspace: OCThumborExample/OCThumborExample.xcworkspace # path to your xcodeproj folder
-xcode_scheme: OCThumborExample
