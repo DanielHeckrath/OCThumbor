@@ -1,1 +1,5 @@
 pod "OCThumbor", :path => "../OCThumbor.podspec"
+
+target :OCThumborExampleTests, :exclusive => true do
+    pod "OCThumbor", :path => "../OCThumbor.podspec"
+end

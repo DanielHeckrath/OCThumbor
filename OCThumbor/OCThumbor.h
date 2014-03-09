@@ -55,8 +55,9 @@
  Horizontal alignment for crop positioning.
  */
 typedef NS_ENUM(NSUInteger, ThumborHorizontalAlign) {
+    ThumborHorizontalAlignNone,
     ThumborHorizontalAlignLeft,
-    ThumborHorizontalAlignMiddle,
+    ThumborHorizontalAlignCenter,
     ThumborHorizontalAlignRight
 };
 
@@ -64,6 +65,7 @@ typedef NS_ENUM(NSUInteger, ThumborHorizontalAlign) {
  Vertical alignment for crop positioning.
  */
 typedef NS_ENUM(NSUInteger, ThumborVerticalAlign) {
+    ThumborVerticalAlignNone,
     ThumborVerticalAlignTop,
     ThumborVerticalAlignMiddle,
     ThumborVerticalAlignBottom
@@ -73,6 +75,10 @@ typedef NS_ENUM(NSUInteger, ThumborVerticalAlign) {
  Orientation from where to get the pixel color for trim.
  */
 typedef NS_ENUM(NSUInteger, ThumborTrimPixelColor) {
+    /**
+     Does not translate into string
+     */
+    ThumborTrimPixelColorNone,
     /**
      top-left
      */
@@ -96,9 +102,35 @@ typedef NS_ENUM(NSUInteger, ThumborImageFormat) {
 /**
  Original size for image width or height.
  */
-THUMBOR_EXTERN const NSInteger THUMBOR_ORIGINAL_SIZE;
+THUMBOR_EXTERN const int THUMBOR_ORIGINAL_SIZE;
 
 @interface OCThumborURLBuilder : NSObject
+
+@property (nonatomic, strong, readonly) NSString *host;
+@property (nonatomic, strong, readonly) NSString *key;
+@property (nonatomic, strong, readonly) NSString *image;
+
+@property (nonatomic, assign, readonly) BOOL hasCrop;
+@property (nonatomic, assign, readonly) BOOL hasResize;
+@property (nonatomic, assign, readonly) BOOL hasFlipHorizontally;
+@property (nonatomic, assign, readonly) BOOL hasFlipVertically;
+@property (nonatomic, assign, readonly) BOOL hasFitIn;
+@property (nonatomic, assign, readonly) BOOL isSmart;
+@property (nonatomic, assign, readonly) BOOL isTrim;
+@property (nonatomic, assign, readonly) BOOL isLegacy;
+
+@property (nonatomic, assign, readonly) int resizeWidth;
+@property (nonatomic, assign, readonly) int resizeHeight;
+@property (nonatomic, assign, readonly) int cropTop;
+@property (nonatomic, assign, readonly) int cropLeft;
+@property (nonatomic, assign, readonly) int cropBottom;
+@property (nonatomic, assign, readonly) int cropRight;
+
+@property (nonatomic, assign, readonly) ThumborVerticalAlign cropVerticalAlign;
+@property (nonatomic, assign, readonly) ThumborHorizontalAlign cropHorizontalAlign;
+
+@property (nonatomic, assign, readonly) int trimColorTolerance;
+@property (nonatomic, assign, readonly) ThumborTrimPixelColor trimPixelColor;
 
 /**
  Resize picture to desired size.
@@ -436,9 +468,9 @@ THUMBOR_EXTERN const NSInteger THUMBOR_ORIGINAL_SIZE;
 #define th_noise(amount)                           [OCThumborURLBuilder noise:amount]
 #define th_quality(amount)                         [OCThumborURLBuilder quality:amount]
 #define th_rgb(r,g,b)                              [OCThumborURLBuilder red:r green:g blue:b]
-#define th_roundCorner(radius)                     [OCThumborURLBuilder roundCorner:radius]
-#define th_roundCornerC(radius,color)              [OCThumborURLBuilder roundCorner:radius color:color]
-#define th_roundCornerOC(radius,outer,color)       [OCThumborURLBuilder roundCorner:radius radiusOuter:outer color:color]
+#define th_roundCorner(r)                          [OCThumborURLBuilder roundCorner:r]
+#define th_roundCornerC(r,c)                       [OCThumborURLBuilder roundCorner:r color:c]
+#define th_roundCornerOC(r,o,c)                    [OCThumborURLBuilder roundCorner:r radiusOuter:o color:c]
 #define th_watermark(i)                            [OCThumborURLBuilder watermark:i]
 #define th_watermarkXY(i,px,py)                    [OCThumborURLBuilder watermark:i x:px y:py]
 #define th_watermarkXYA(i,px,py,a)                 [OCThumborURLBuilder watermark:i x:px y:py transparency:a]

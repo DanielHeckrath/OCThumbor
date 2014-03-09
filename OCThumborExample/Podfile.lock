@@ -1,6 +1,6 @@
 PODS:
   - CocoaSecurity (1.2.3)
-  - OCThumbor (0.1.0):
+  - OCThumbor (0.1.1):
     - CocoaSecurity (~> 1.2)
 
 DEPENDENCIES:
@@ -12,6 +12,6 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   CocoaSecurity: 9c82f530dc5b0516b04cc2ed4c2f5cd90f25352d
-  OCThumbor: b754b242cf0dc15f9d0161c2984caa658bd687fe
+  OCThumbor: d70d43103c4d5102dae0ffd2241d078a7e65271d
 
 COCOAPODS: 0.29.0

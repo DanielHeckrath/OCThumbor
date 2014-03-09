@@ -33,10 +33,10 @@ NSString * const THUMBOR_FILTER_EQUALIZE        = @"equalize";
 
 /** Original size for image width or height. **/
 
-const NSInteger THUMBOR_ORIGINAL_SIZE = NSIntegerMin;
+const int THUMBOR_ORIGINAL_SIZE = INT_MIN;
 
 NSString * const HORIZONTAL_ALIGN_LEFT      = @"left";
-NSString * const HORIZONTAL_ALIGN_MIDDLE    = @"middle";
+NSString * const HORIZONTAL_ALIGN_CENTER    = @"center";
 NSString * const HORIZONTAL_ALIGN_RIGHT     = @"right";
 
 NSString * const VERTICAL_ALIGN_TOP     = @"top";
@@ -58,29 +58,7 @@ NSString * const IMAGE_FORMAT_WEBP  = @"webp";
 @end
 
 @implementation OCThumborURLBuilder {
-    NSString *_image;
-    NSString *_host;
-    NSString *_key;
-    BOOL _hasCrop;
-    BOOL _hasResize;
-    BOOL _isSmart;
-    BOOL _isTrim;
-    BOOL _isLegacy;
-    BOOL _flipHorizontally;
-    BOOL _flipVertically;
-    BOOL _fitIn;
-    int _resizeWidth;
-    int _resizeHeight;
-    int _cropTop;
-    int _cropLeft;
-    int _cropBottom;
-    int _cropRight;
-    int _trimColorTolerance;
     NSMutableArray *_filters;
-    
-    NSString *_verticalAlign;
-    NSString *_horizontalAlign;
-    NSString *_trimPixelColor;
 }
 
 - (id)initWithHost:(NSString *)host key:(NSString *)key image:(NSString *)image {
@@ -89,6 +67,10 @@ NSString * const IMAGE_FORMAT_WEBP  = @"webp";
         _host = host;
         _key = key;
         _image = image;
+        
+        _cropVerticalAlign = ThumborVerticalAlignNone;
+        _cropHorizontalAlign = ThumborHorizontalAlignNone;
+        _trimPixelColor = ThumborTrimPixelColorNone;
     }
     return self;
 }
@@ -112,29 +94,29 @@ NSString * const IMAGE_FORMAT_WEBP  = @"webp";
 }
 
 - (instancetype)flipVertically {
-    if (_hasResize) {
+    if (!_hasResize) {
         @throw [NSException exceptionWithName:NSInternalInconsistencyException reason:@"Image must be resized first in order to flip." userInfo:nil];
     }
     
-    _flipVertically = YES;
+    _hasFlipVertically = YES;
     return self;
 }
 
 - (instancetype)flipHorizontally {
-    if (_hasResize) {
+    if (!_hasResize) {
         @throw [NSException exceptionWithName:NSInternalInconsistencyException reason:@"Image must be resized first in order to flip." userInfo:nil];
     }
     
-    _flipHorizontally = YES;
+    _hasFlipHorizontally = YES;
     return self;
 }
 
 - (instancetype)fitIn {
-    if (_hasResize) {
+    if (!_hasResize) {
         @throw [NSException exceptionWithName:NSInternalInconsistencyException reason:@"Image must be resized first in order to apply 'fit-in'." userInfo:nil];
     }
     
-    _fitIn = YES;
+    _hasFitIn = YES;
     return self;
 }
 
@@ -164,22 +146,26 @@ NSString * const IMAGE_FORMAT_WEBP  = @"webp";
         @throw [NSException exceptionWithName:NSInternalInconsistencyException reason:@"Image must be cropped first in order to align." userInfo:nil];
     }
     
+    _cropVerticalAlign = verticalAlign;
+    
+    return self;
+}
+
+- (NSString *)stringFromVerticalAlign:(ThumborVerticalAlign)verticalAlign {
     switch (verticalAlign) {
         case ThumborVerticalAlignTop:
-            _verticalAlign = VERTICAL_ALIGN_TOP;
+            return VERTICAL_ALIGN_TOP;
             break;
         case ThumborVerticalAlignMiddle:
-            _verticalAlign = VERTICAL_ALIGN_MIDDLE;
+            return VERTICAL_ALIGN_MIDDLE;
             break;
         case ThumborVerticalAlignBottom:
-            _verticalAlign = VERTICAL_ALIGN_BOTTOM;
+            return VERTICAL_ALIGN_BOTTOM;
             break;
         default:
             @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"invalid value for vertical align" userInfo:nil];
             break;
     }
-    
-    return self;
 }
 
 - (instancetype)horizontalAlign:(ThumborHorizontalAlign)horizontalAlign {
@@ -187,22 +173,26 @@ NSString * const IMAGE_FORMAT_WEBP  = @"webp";
         @throw [NSException exceptionWithName:NSInternalInconsistencyException reason:@"Image must be cropped first in order to align." userInfo:nil];
     }
     
-    switch (horizontalAlign) {
-        case ThumborHorizontalAlignLeft:
-            _horizontalAlign = HORIZONTAL_ALIGN_LEFT;
-            break;
-        case ThumborHorizontalAlignMiddle:
-            _horizontalAlign = HORIZONTAL_ALIGN_MIDDLE;
-            break;
-        case ThumborHorizontalAlignRight:
-            _horizontalAlign = HORIZONTAL_ALIGN_RIGHT;
-            break;
-        default:
-            @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"invalid value for vertical align" userInfo:nil];
-            break;
-    }
+    _cropHorizontalAlign = horizontalAlign;
     
     return self;
+}
+
+- (NSString *)stringFromHorizontalAlign:(ThumborHorizontalAlign)horizontalAlign {
+    switch (horizontalAlign) {
+        case ThumborHorizontalAlignLeft:
+            return HORIZONTAL_ALIGN_LEFT;
+            break;
+        case ThumborHorizontalAlignCenter:
+            return HORIZONTAL_ALIGN_CENTER;
+            break;
+        case ThumborHorizontalAlignRight:
+            return HORIZONTAL_ALIGN_RIGHT;
+            break;
+        default:
+            @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"invalid value for horizontal align" userInfo:nil];
+            break;
+    }
 }
 
 - (instancetype)alignVertically:(ThumborVerticalAlign)verticalAlign horizontally:(ThumborHorizontalAlign)horizontalAlign {
@@ -218,7 +208,7 @@ NSString * const IMAGE_FORMAT_WEBP  = @"webp";
 }
 
 - (instancetype)trim {
-    return [self trimWithColorString:nil tolerance:0];
+    return [self trim:ThumborTrimPixelColorNone withTolerance:0];
 }
 
 - (instancetype)trim:(ThumborTrimPixelColor)trimColor {
@@ -226,32 +216,31 @@ NSString * const IMAGE_FORMAT_WEBP  = @"webp";
 }
 
 - (instancetype)trim:(ThumborTrimPixelColor)trimColor withTolerance:(int)tolerance {
-    NSString *trimColorString;
+    if (tolerance < 0 || tolerance > 442) {
+        @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"Color tolerance must be between 0 and 442." userInfo:nil];
+    }
+    if (tolerance > 0 && trimColor == ThumborTrimPixelColorNone) {
+        @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"Trim pixel color value must be valid." userInfo:nil];
+    }
+    
+    _isTrim = YES;
+    _trimPixelColor = trimColor;
+    _trimColorTolerance = tolerance;
+    
+    return self;
+}
+
+- (NSString *)stringFromTrimPixelColor:(ThumborTrimPixelColor)trimColor {
     switch (trimColor) {
         case ThumborTrimPixelColorTopLeft:
-            trimColorString = TRIM_PIXEL_COLOR_TOP_LEFT;
+            return TRIM_PIXEL_COLOR_TOP_LEFT;
             break;
         case ThumborTrimPixelColorBottomRight:
-            trimColorString = TRIM_PIXEL_COLOR_BOTTOM_RIGHT;
+            return TRIM_PIXEL_COLOR_BOTTOM_RIGHT;
         default:
             @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"Invalid value for trim color" userInfo:nil];
             break;
     }
-    
-    return [self trimWithColorString:trimColorString tolerance:tolerance];
-}
-
-- (instancetype)trimWithColorString:(NSString *)trimColor tolerance:(int)tolerance {
-    if (tolerance < 0 || tolerance > 442) {
-        @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"Color tolerance must be between 0 and 442." userInfo:nil];
-    }
-    if (tolerance > 0 && trimColor == nil) {
-        @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"Trim pixel color value must not be null." userInfo:nil];
-    }
-    _isTrim = YES;
-    _trimPixelColor = trimColor;
-    _trimColorTolerance = tolerance;
-    return self;
 }
 
 - (instancetype)legacy {
@@ -308,6 +297,10 @@ NSString * const IMAGE_FORMAT_WEBP  = @"webp";
     CocoaSecurityResult *encrypted = legacy ? [CocoaSecurity aesEncrypt:config key:_key] : [CocoaSecurity hmacSha1:config hmacKey:_key];
     NSString *encoded = encrypted.base64;
     
+    // make encoded part url safe
+    encoded = [encoded stringByReplacingOccurrencesOfString:@"/" withString:@"_"];
+    encoded = [encoded stringByReplacingOccurrencesOfString:@"+" withString:@"-"];
+    
     NSString *suffix = legacy ? _image : config;
     return [NSString stringWithFormat:@"%@%@/%@", _host, encoded, suffix];
 }
@@ -341,8 +334,8 @@ NSString * const IMAGE_FORMAT_WEBP  = @"webp";
     
     if (_isTrim) {
         [builder appendString:THUMBOR_PART_TRIM];
-        if (_trimPixelColor != nil) {
-            [builder appendFormat:@":%@", _trimPixelColor];
+        if (_trimPixelColor != ThumborTrimPixelColorNone) {
+            [builder appendFormat:@":%@", [self stringFromTrimPixelColor:_trimPixelColor]];
             if (_trimColorTolerance > 0) {
                 [builder appendFormat:@":%d", _trimColorTolerance];
             }
@@ -351,26 +344,26 @@ NSString * const IMAGE_FORMAT_WEBP  = @"webp";
     }
     
     if (_hasCrop) {
-        [builder appendFormat:@"%dx%d:%dx:%d", _cropLeft, _cropTop, _cropRight, _cropBottom];
+        [builder appendFormat:@"%dx%d:%dx%d", _cropLeft, _cropTop, _cropRight, _cropBottom];
         
         if (_isSmart) {
             [builder appendFormat:@"/%@", THUMBOR_PART_SMART];
         } else {
-            if (_horizontalAlign != nil) {
-                [builder appendFormat:@"/%@", _horizontalAlign];
+            if (_cropHorizontalAlign != ThumborHorizontalAlignNone) {
+                [builder appendFormat:@"/%@", [self stringFromHorizontalAlign:_cropHorizontalAlign]];
             }
-            if (_verticalAlign != nil) {
-                [builder appendFormat:@"/%@", _verticalAlign];
+            if (_cropVerticalAlign != ThumborHorizontalAlignNone) {
+                [builder appendFormat:@"/%@", [self stringFromVerticalAlign:_cropVerticalAlign]];
             }
         }
         [builder appendString:@"/"];
     }
     
     if (_hasResize) {
-        if (_fitIn) {
+        if (_hasFitIn) {
             [builder appendFormat:@"%@/", THUMBOR_PART_FIT_IN];
         }
-        if (_flipHorizontally) {
+        if (_hasFlipHorizontally) {
             [builder appendString:@"-"];
         }
         if (_resizeWidth == THUMBOR_ORIGINAL_SIZE) {
@@ -379,7 +372,7 @@ NSString * const IMAGE_FORMAT_WEBP  = @"webp";
             [builder appendFormat:@"%d", _resizeWidth];
         }
         [builder appendString:@"x"];
-        if (_flipVertically) {
+        if (_hasFlipVertically) {
             [builder appendString:@"-"];
         }
         if (_resizeHeight == THUMBOR_ORIGINAL_SIZE) {
@@ -473,7 +466,7 @@ NSString * const IMAGE_FORMAT_WEBP  = @"webp";
     int g = (color & 0xFF00) >> 8;
     int b = color & 0xFF;
     
-    [builder appendFormat:@"%d,%d,%d)", r, g, b];
+    [builder appendFormat:@",%d,%d,%d)", r, g, b];
     
     return [builder copy];
 }
@@ -516,7 +509,7 @@ NSString * const IMAGE_FORMAT_WEBP  = @"webp";
 
 + (NSString *)sharpen:(double)amount radius:(double)radius luminanceOnly:(BOOL)luminanceOnly {
     NSString *luminance = luminanceOnly ? @"true" : @"false";
-    return [NSString stringWithFormat:@"%@(%f,%f,%@)", THUMBOR_FILTER_SHARPEN, amount, radius, luminance];
+    return [NSString stringWithFormat:@"%@(%.1f,%.1f,%@)", THUMBOR_FILTER_SHARPEN, amount, radius, luminance];
 }
 
 + (NSString *)fill:(int)color {
@@ -598,6 +591,10 @@ NSString * const IMAGE_FORMAT_WEBP  = @"webp";
     }
     self = [super init];
     if (self) {
+        if (![host hasSuffix:@"/"]) {
+            host = [host stringByAppendingString:@"/"];
+        }
+        
         _host = host;
         _key = key;
     }
