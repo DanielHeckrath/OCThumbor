@@ -8,6 +8,12 @@
 
 #import <Foundation/Foundation.h>
 
+#ifdef __cplusplus
+#define THUMBOR_EXTERN		extern "C" __attribute__((visibility ("default")))
+#else
+#define THUMBOR_EXTERN	        extern __attribute__((visibility ("default")))
+#endif
+
 @class OCThumborURLBuilder;
 
 @interface OCThumbor : NSObject
@@ -90,7 +96,7 @@ typedef NS_ENUM(NSUInteger, ThumborImageFormat) {
 /**
  Original size for image width or height.
  */
-UIKIT_EXTERN const NSInteger THUMBOR_ORIGINAL_SIZE;
+THUMBOR_EXTERN const NSInteger THUMBOR_ORIGINAL_SIZE;
 
 @interface OCThumborURLBuilder : NSObject
 
