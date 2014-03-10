@@ -43,6 +43,7 @@ OCThumborURLBuilder *builder = [thumbor buildImage:@"example.com/background.png"
 	th_quality(85),
 	nil
 ];
+[builder toUrl];
 // Produces: /unsafe/200x100/filters:round_corner(10,255,255,255):quality(85)/example.com/background.png
 ```
 
