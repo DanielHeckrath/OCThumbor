@@ -252,6 +252,7 @@
     OCThumborURLBuilder *image = [_unsafe buildImage:@"http://a.com/b.png"];
     XCTAssertFalse(image.hasCrop);
     XCTAssertEqual(image.cropHorizontalAlign, HorizontalAlignNone);
+    XCTAssertEqual(image.cropVerticalAlign, VerticalAlignNone);
     
     XCTAssertThrows([image setCropHorizontalAlign:HorizontalAlignCenter], @"Allowed horizontal crop align without crop.");
     XCTAssertThrows([image setCropVerticalAlign:VerticalAlignMiddle], @"Allowed vertical crop align without crop.");
