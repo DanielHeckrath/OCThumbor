@@ -14,6 +14,18 @@
 #define THUMBOR_EXTERN	        extern __attribute__((visibility ("default")))
 #endif
 
+#if !defined(THUMBOR_INLINE)
+# if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+#  define THUMBOR_INLINE static inline
+# elif defined(__MWERKS__) || defined(__cplusplus)
+#  define THUMBOR_INLINE static inline
+# elif defined(__GNUC__)
+#  define THUMBOR_INLINE static __inline__
+# else
+#  define THUMBOR_INLINE static
+# endif
+#endif /* !defined(THUMBOR_INLINE) */
+
 @class OCThumborURLBuilder;
 
 @interface OCThumbor : NSObject
@@ -54,50 +66,67 @@
 /**
  Horizontal alignment for crop positioning.
  */
-typedef NS_ENUM(NSUInteger, ThumborHorizontalAlign) {
-    ThumborHorizontalAlignNone,
-    ThumborHorizontalAlignLeft,
-    ThumborHorizontalAlignCenter,
-    ThumborHorizontalAlignRight
+typedef NS_ENUM(NSUInteger, HorizontalAlign) {
+    HorizontalAlignNone,
+    HorizontalAlignLeft,
+    HorizontalAlignCenter,
+    HorizontalAlignRight
 };
 
 /**
  Vertical alignment for crop positioning.
  */
-typedef NS_ENUM(NSUInteger, ThumborVerticalAlign) {
-    ThumborVerticalAlignNone,
-    ThumborVerticalAlignTop,
-    ThumborVerticalAlignMiddle,
-    ThumborVerticalAlignBottom
+typedef NS_ENUM(NSUInteger, VerticalAlign) {
+    VerticalAlignNone,
+    VerticalAlignTop,
+    VerticalAlignMiddle,
+    VerticalAlignBottom
 };
 
 /**
  Orientation from where to get the pixel color for trim.
  */
-typedef NS_ENUM(NSUInteger, ThumborTrimPixelColor) {
+typedef NS_ENUM(NSUInteger, TrimPixelColor) {
     /**
      Does not translate into string
      */
-    ThumborTrimPixelColorNone,
+    TrimPixelColorNone,
     /**
      top-left
      */
-    ThumborTrimPixelColorTopLeft,
+    TrimPixelColorTopLeft,
     /**
      bottom-right
      */
-    ThumborTrimPixelColorBottomRight
+    TrimPixelColorBottomRight
 };
 
 /**
  Image formats supported by Thumbor.
  */
-typedef NS_ENUM(NSUInteger, ThumborImageFormat) {
-    ThumborImageFormatGif,
-    ThumborImageFormatJpeg,
-    ThumborImageFormatPng,
-    ThumborImageFormatWebp
+typedef NS_ENUM(NSUInteger, ImageFormat) {
+    ImageFormatGif,
+    ImageFormatJpeg,
+    ImageFormatPng,
+    ImageFormatWebp
 };
+
+typedef struct CropEdgeInsets {
+    int top, left, bottom, right;  // specify amount to inset (positive) for each of the edges.
+} CropEdgeInsets;
+
+THUMBOR_INLINE CropEdgeInsets CropEdgeInsetsMake(CGFloat top, CGFloat left, CGFloat bottom, CGFloat right) {
+    CropEdgeInsets insets = {top, left, bottom, right};
+    return insets;
+}
+
+typedef struct ResizeSize {
+    int width, height;  // specify amount to inset (positive) for each of the edges.
+} ResizeSize;
+
+THUMBOR_INLINE ResizeSize ResizeSizeMake(int width, int height) {
+    ResizeSize size; size.width = width; size.height = height; return size;
+}
 
 /**
  Original size for image width or height.
@@ -112,142 +141,24 @@ THUMBOR_EXTERN const int THUMBOR_ORIGINAL_SIZE;
 
 @property (nonatomic, assign, readonly) BOOL hasCrop;
 @property (nonatomic, assign, readonly) BOOL hasResize;
-@property (nonatomic, assign, readonly) BOOL hasFlipHorizontally;
-@property (nonatomic, assign, readonly) BOOL hasFlipVertically;
-@property (nonatomic, assign, readonly) BOOL hasFitIn;
-@property (nonatomic, assign, readonly) BOOL isSmart;
-@property (nonatomic, assign, readonly) BOOL isTrim;
-@property (nonatomic, assign, readonly) BOOL isLegacy;
+@property (nonatomic, assign, readonly) BOOL hasTrim;
 
-@property (nonatomic, assign, readonly) int resizeWidth;
-@property (nonatomic, assign, readonly) int resizeHeight;
-@property (nonatomic, assign, readonly) int cropTop;
-@property (nonatomic, assign, readonly) int cropLeft;
-@property (nonatomic, assign, readonly) int cropBottom;
-@property (nonatomic, assign, readonly) int cropRight;
+@property (nonatomic, assign) ResizeSize resizeSize;
+@property (nonatomic, assign) BOOL flipVertically;
+@property (nonatomic, assign) BOOL flipHorizontally;
+@property (nonatomic, assign) BOOL fitIn;
 
-@property (nonatomic, assign, readonly) ThumborVerticalAlign cropVerticalAlign;
-@property (nonatomic, assign, readonly) ThumborHorizontalAlign cropHorizontalAlign;
+@property (nonatomic, assign) CropEdgeInsets cropEdgeInsets;
+@property (nonatomic, assign) VerticalAlign cropVerticalAlign;
+@property (nonatomic, assign) HorizontalAlign cropHorizontalAlign;
+@property (nonatomic, assign) BOOL smart;
 
-@property (nonatomic, assign, readonly) int trimColorTolerance;
-@property (nonatomic, assign, readonly) ThumborTrimPixelColor trimPixelColor;
+@property (nonatomic, assign) TrimPixelColor trimPixelColor;
+@property (nonatomic, assign) int trimColorTolerance;
 
-/**
- Resize picture to desired size.
- 
- @param width  Desired width.
- @param height Desired height.
- 
- @throws NSInvalidArgumentException if width or height is less than 0 or both are 0.
- */
-- (instancetype)resizeWidth:(int)width height:(int)height;
+@property (nonatomic, assign) BOOL legacy;
 
-/**
- Flip the image vertically.
- 
- @throws NSInternalInconsistencyException if image has not been marked for resize.
- */
-- (instancetype)flipVertically;
-
-/**
- Flip the image horizontally.
- 
- @throws NSInternalInconsistencyException if image has not been marked for resize.
- */
-- (instancetype)flipHorizontally;
-
-/**
- Contrain the image size inside the resized box, scaling as needed.
- 
- @throws NSInternalInconsistencyException if image has not been marked for resize.
- */
-- (instancetype)fitIn;
-
-/**
- Crop the image between two points.
- 
- @param top    Top bound.
- @param left   Left bound.
- @param bottom Bottom bound.
- @param right  Right bound.
- 
- @throws NSInvalidArgumentException if top or left are less than zero or bottom or right are less than one or less than top or left, respectively.
- */
-- (instancetype)cropTop:(int)top left:(int)left right:(int)bottom bottom:(int)right;
-
-/**
- Set the horizontal alignment for the image when cropping.
- 
- @param horizontalAlign Horizontal alignment.
- 
- @throws NSInternalInconsistencyException if image has not been marked for crop.
- */
-- (instancetype)horizontalAlign:(ThumborHorizontalAlign)horizontalAlign;
-
-/**
- Set the vertical alignment for the image when cropping.
- 
- @param verticalAlign Vertical alignment.
- 
- @throws NSInternalInconsistencyException if image has not been marked for crop.
- */
-- (instancetype)verticalAlign:(ThumborVerticalAlign)verticalAlign;
-
-/**
- Set the horizontal and vertical alignment for the image when cropping.
- 
- @param verticalAlign   Vertical alignment.
- @param horizontalAlign Horizontal alignment.
- 
- @throws NSInternalInconsistencyException if image has not been marked for crop.
- */
-- (instancetype)alignVertically:(ThumborVerticalAlign)verticalAlign horizontally:(ThumborHorizontalAlign)horizontalAlign;
-
-/**
- Use smart cropping for determining the important portion of an image.
- 
- @throws NSInternalInconsistencyException if image has not been marked for crop.
- */
-- (instancetype)smart;
-
-/**
- Removing surrounding space in image.
- */
-- (instancetype)trim;
-
-/**
- Removing surrounding space in image. Get trim color from specified pixel.
- 
- @param trimColor orientation from where to get the pixel color.
- */
-- (instancetype)trim:(ThumborTrimPixelColor)trimColor;
-
-/**
- Removing surrounding space in image. Get trim color from specified pixel.
- 
- @param trimColor orientation from where to get the pixel color.
- @param tolerance 0 - 442. This is the euclidian distance between the colors of the reference pixel and the surrounding pixels is used. If the distance is within the tolerance they'll get trimmed.
- */
-- (instancetype)trim:(ThumborTrimPixelColor)trimColor withTolerance:(int)tolerance;
-
-/**
- Use legacy encryption when constructing a safe URL.
- */
-- (instancetype)legacy;
-
-/**
- Add one or more filters to the image.
- 
- @throws NSInvalidArgumentException if no arguments supplied or an argument is empty
- */
-- (instancetype)filter:(NSString *)filterValue, ... NS_REQUIRES_NIL_TERMINATION;
-
-/**
- Add one or more filters to the image.
- 
- @throws NSInvalidArgumentException if filters is empty or an argument is blank
- */
-- (instancetype)filterFromArray:(NSArray *)filters;
+@property (nonatomic, strong) NSArray *filter;
 
 /**
  Build the URL. This will either call toUrlSafe or toUrlUnsafe depending on whether a key was set.
@@ -288,7 +199,7 @@ THUMBOR_EXTERN const int THUMBOR_ORIGINAL_SIZE;
  
  @throws NSInvalidArgumentException if amount is outside bounds.
  */
-+ (NSString *)brightness:(int)amount;
++ (NSString *)brightnessFilter:(int)amount;
 
 /**
  The filter increases or decreases the image contrast.
@@ -297,7 +208,7 @@ THUMBOR_EXTERN const int THUMBOR_ORIGINAL_SIZE;
  
  @throws NSInvalidArgumentException if amount is outside bounds.
  */
-+ (NSString *)contrast:(int)amount;
++ (NSString *)contrastFilter:(int)amount;
 
 /**
  This filter adds noise to the image.
@@ -306,7 +217,7 @@ THUMBOR_EXTERN const int THUMBOR_ORIGINAL_SIZE;
  
  @throws NSInvalidArgumentException if amount is outside bounds.
  */
-+ (NSString *)noise:(int)amount;
++ (NSString *)noiseFilter:(int)amount;
 
 /**
  This filter changes the overall quality of the JPEG image (does nothing for PNGs or GIFs).
@@ -315,7 +226,7 @@ THUMBOR_EXTERN const int THUMBOR_ORIGINAL_SIZE;
  
  @throws NSInvalidArgumentException if amount is outside bounds.
  */
-+ (NSString *)quality:(int)amount;
++ (NSString *)qualityFilter:(int)amount;
 
 /**
  This filter changes the amount of color in each of the three channels.
@@ -326,14 +237,14 @@ THUMBOR_EXTERN const int THUMBOR_ORIGINAL_SIZE;
  
  @throws NSInvalidArgumentException if red, green, or blue are outside of bounds.
  */
-+ (NSString *)red:(int)red green:(int)green blue:(int)blue;
++ (NSString *)colorFilterWithRed:(int)red withGreen:(int)green andBlue:(int)blue;
 
 /**
  This filter adds rounded corners to the image using the white as the background.
  
  @param radius amount of pixels to use as radius.
  */
-+ (NSString *)roundCorner:(int)radius;
++ (NSString *)roundCornerFilter:(int)radius;
 
 /**
  This filter adds rounded corners to the image using the specified color as the background.
@@ -341,7 +252,7 @@ THUMBOR_EXTERN const int THUMBOR_ORIGINAL_SIZE;
  @param radius amount of pixels to use as radius.
  @param color  fill color for clipped region.
  */
-+ (NSString *)roundCorner:(int)radius color:(int)color;
++ (NSString *)roundCornerFilter:(int)radius withColor:(int)color;
 
 /**
  This filter adds rounded corners to the image using the specified color as the background.
@@ -350,7 +261,7 @@ THUMBOR_EXTERN const int THUMBOR_ORIGINAL_SIZE;
  @param radiusOuter specifies the second value for the ellipse used for the radius. Use 0 for no value.
  @param color       fill color for clipped region.
  */
-+ (NSString *)roundCorner:(int)radiusInner radiusOuter:(int)radiusOuter color:(int)color;
++ (NSString *)roundCornerFilter:(int)innerRadius withOuterRadius:(int)outerRadius andColor:(int)color;
 
 /**
  This filter adds a watermark to the image.
@@ -359,7 +270,7 @@ THUMBOR_EXTERN const int THUMBOR_ORIGINAL_SIZE;
  
  @throws NSInvalidArgumentException if imageUrl is blank
  */
-+ (NSString *)watermark:(NSString *)imageUrl;
++ (NSString *)watermarkFilter:(NSString *)imageUrl;
 
 /**
  This filter adds a watermark to the image.
@@ -370,7 +281,7 @@ THUMBOR_EXTERN const int THUMBOR_ORIGINAL_SIZE;
  
  @throws NSInvalidArgumentException if imageUrl is blank
  */
-+ (NSString *)watermark:(NSString *)imageUrl x:(int)x y:(int)y;
++ (NSString *)watermarkFilter:(NSString *)imageUrl withX:(int)x andY:(int)y;
 
 /**
  This filter adds a watermark to the image.
@@ -382,7 +293,7 @@ THUMBOR_EXTERN const int THUMBOR_ORIGINAL_SIZE;
  
  @throws NSInvalidArgumentException if imageUrl is blank or transparency is outside of bounds
  */
-+ (NSString *)watermark:(NSString *)imageUrl x:(int)x y:(int)y transparency:(int)transparency;
++ (NSString *)watermarkFilter:(NSString *)imageUrl withX:(int)x withY:(int)y andTransparency:(int)transparency;
 
 /**
  This filter adds a watermark to the image.
@@ -391,7 +302,7 @@ THUMBOR_EXTERN const int THUMBOR_ORIGINAL_SIZE;
  
  @throws NSInvalidArgumentException if builder is nil
  */
-+ (NSString *)watermarkWithBuilder:(OCThumborURLBuilder *)builder;
++ (NSString *)watermarkFilterWithBuilder:(OCThumborURLBuilder *)builder;
 
 /**
  This filter adds a watermark to the image.
@@ -402,7 +313,7 @@ THUMBOR_EXTERN const int THUMBOR_ORIGINAL_SIZE;
  
  @throws NSInvalidArgumentException if builder is nil
  */
-+ (NSString *)watermarkWithBuilder:(OCThumborURLBuilder *)builder x:(int)x y:(int)y;
++ (NSString *)watermarkFilterWithBuilder:(OCThumborURLBuilder *)builder withX:(int)x andY:(int)y;
 
 /**
  This filter adds a watermark to the image.
@@ -414,7 +325,7 @@ THUMBOR_EXTERN const int THUMBOR_ORIGINAL_SIZE;
  
  @throws NSInvalidArgumentException if builder is nil
  */
-+ (NSString *)watermarkWithBuilder:(OCThumborURLBuilder *)builder x:(int)x y:(int)y transparency:(int)transparency;
++ (NSString *)watermarkFilterWithBuilder:(OCThumborURLBuilder *)builder withX:(int)x withY:(int)y andTransparency:(int)transparency;
 
 /**
  This filter enhances apparent sharpness of the image. It's heavily based on Marco Rossini's excellent Wavelet sharpen GIMP plugin. Check http://registry.gimp.org/node/9836 for details about how it work.
@@ -423,64 +334,64 @@ THUMBOR_EXTERN const int THUMBOR_ORIGINAL_SIZE;
  @param radius        Sharpen radius. Typical values are between 0.0 and 2.0.
  @param luminanceOnly Sharpen only luminance channel.
  */
-+ (NSString *)sharpen:(double)amount radius:(double)radius luminanceOnly:(BOOL)luminanceOnly;
++ (NSString *)sharpenFilter:(double)amount withRadius:(double)radius andLuminanceOnly:(BOOL)luminanceOnly;
 
 /**
  This filter permit to return an image sized exactly as requested wherever is its ratio by filling with chosen color the missing parts. Usually used with "fit-in" or "adaptive-fit-in"
  */
-+ (NSString *)fill:(int)color;
++ (NSString *)fillFilter:(int)color;
 
 /**
  Specify the output format of the image.
  
  @see ThumborImageFormat
  */
-+ (NSString *)format:(ThumborImageFormat)format;
++ (NSString *)formatFilter:(ImageFormat)format;
 
 /**
  This filter uses a 9-patch to overlay the image.
  
  @param imageUrl Watermark image URL. It is very important to understand that the same image loader that Thumbor uses will be used here.
  */
-+ (NSString *)frame:(NSString *)imageUrl;
++ (NSString *)frameFilter:(NSString *)imageUrl;
 
 /**
  This filter strips the ICC profile from the image.
  */
-+ (NSString *)stripicc;
++ (NSString *)stripiccFilter;
 
 /**
  This filter changes the image to grayscale.
  */
-+ (NSString *)grayscale;
++ (NSString *)grayscaleFilter;
 
 /**
  This filter equalizes the color distribution in the image.
  */
-+ (NSString *)equalize;
++ (NSString *)equalizeFilter;
 
 @end
 
 #pragma mark - Shorthands for filter methods
 
-#define th_brightness(amount)                      [OCThumborURLBuilder brightness:amount]
-#define th_contrast(amount)                        [OCThumborURLBuilder contrast:amount]
-#define th_noise(amount)                           [OCThumborURLBuilder noise:amount]
-#define th_quality(amount)                         [OCThumborURLBuilder quality:amount]
-#define th_rgb(r,g,b)                              [OCThumborURLBuilder red:r green:g blue:b]
-#define th_roundCorner(r)                          [OCThumborURLBuilder roundCorner:r]
-#define th_roundCornerC(r,c)                       [OCThumborURLBuilder roundCorner:r color:c]
-#define th_roundCornerOC(r,o,c)                    [OCThumborURLBuilder roundCorner:r radiusOuter:o color:c]
-#define th_watermark(i)                            [OCThumborURLBuilder watermark:i]
-#define th_watermarkXY(i,px,py)                    [OCThumborURLBuilder watermark:i x:px y:py]
-#define th_watermarkXYA(i,px,py,a)                 [OCThumborURLBuilder watermark:i x:px y:py transparency:a]
-#define th_watermarkB(b)                           [OCThumborURLBuilder watermarkWithBuilder:b]
-#define th_watermarkBXY(b,px,py)                   [OCThumborURLBuilder watermarkWithBuilder:b x:px y:py]
-#define th_watermarkBXYA(b,px,py,a)                [OCThumborURLBuilder watermarkWithBuilder:b x:px y:py transparency:a]
-#define th_sharpen(a,r,l)                          [OCThumborURLBuilder sharpen:a radius:r luminanceOnly:l]
-#define th_fill(c)                                 [OCThumborURLBuilder fill:c]
-#define th_format(i)                               [OCThumborURLBuilder format:i]
-#define th_frame(i)                                [OCThumborURLBuilder frame:i]
-#define th_stripicc                                [OCThumborURLBuilder stripicc]
-#define th_grayscale                               [OCThumborURLBuilder grayscale]
-#define th_equalize                                [OCThumborURLBuilder equalize]
+#define brightness(amount)                              [OCThumborURLBuilder brightnessFilter:amount]
+#define contrast(amount)                                [OCThumborURLBuilder contrastFilter:amount]
+#define noise(amount)                                   [OCThumborURLBuilder noiseFilter:amount]
+#define quality(amount)                                 [OCThumborURLBuilder qualityFilter:amount]
+#define rgb(red,green,blue)                             [OCThumborURLBuilder colorFilterWithRed:red withGreen:green andBlue:blue]
+#define roundCorner(radius)                             [OCThumborURLBuilder roundCornerFilter:radius]
+#define roundCornerC(radius,color)                      [OCThumborURLBuilder roundCornerFilter:radius withColor:color]
+#define roundCornerOC(radius,outerRadius,color)         [OCThumborURLBuilder roundCornerFilter:radius withOuterRadius:outerRadius andColor:color]
+#define watermark(image)                                [OCThumborURLBuilder watermarkFilter:image]
+#define watermarkXY(image,x,y)                          [OCThumborURLBuilder watermarkFilter:image withX:x andY:y]
+#define watermarkXYA(image,x,y,transparency)            [OCThumborURLBuilder watermarkFilter:image withX:x withY:y andTransparency:transparency]
+#define watermarkB(builder)                             [OCThumborURLBuilder watermarkFilterWithBuilder:builder]
+#define watermarkBXY(builder,x,y)                       [OCThumborURLBuilder watermarkFilterWithBuilder:builder withX:x andY:y]
+#define watermarkBXYA(builder,x,y,transparency)         [OCThumborURLBuilder watermarkFilterWithBuilder:builder withX:x withY:y andTransparency:transparency]
+#define sharpen(amount,radius,luminancyOnly)            [OCThumborURLBuilder sharpenFilter:amount withRadius:radius andLuminanceOnly:luminancyOnly]
+#define fill(color)                                     [OCThumborURLBuilder fillFilter:color]
+#define format(image)                                   [OCThumborURLBuilder formatFilter:image]
+#define frame(image)                                    [OCThumborURLBuilder frameFilter:image]
+#define stripicc                                        [OCThumborURLBuilder stripiccFilter]
+#define grayscale                                       [OCThumborURLBuilder grayscaleFilter]
+#define equalize                                        [OCThumborURLBuilder equalizeFilter]
