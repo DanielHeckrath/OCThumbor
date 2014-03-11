@@ -18,31 +18,28 @@ OCThumbor *thumbor = [OCThumbor createWithHost:@"http://example.com/" key:@"key"
 
 ```objc
 OCThumborURLBuilder *builder = [thumbor buildImage:@"example.com/image.png"];
-[builder resizeWidth:48 height:48];
+builder.resizeSize = ResizeSizeMake(48,48);
 [builder toUrl];
 // Produces: /unsafe/48x48/example.com/image.png
 
 OCThumborURLBuilder *builder = [thumbor buildImage:@"example.com/image.png"];
-[builder cropTop:10 left:10 right:90 bottom:90];
-[builder resizeWidth:40 height:40];
-[builder smart];
+builder.cropEdgeInsets = CropEdgeInsetsMake(10,10,90,90);
+builder.resizeSize = ResizeSizeMake(40,40);
+builder.smart = YES;
 [builder toUrl];
 // Produces: /unsafe/10x10:90x90/smart/40x40/example.com/image.png
 
 OCThumborURLBuilder *builder = [thumbor buildImage:@"example.com/image.png"];
-[builder cropTop:5 left:5 right:195 bottom:195];
-[builder resizeWidth:40 height:40];
-[builder alignVertically:ThumborVerticalAlignBottom horizontally:ThumborHorizontalAlignRight];
+builder.cropEdgeInsets = CropEdgeInsetsMake(10,10,90,90);
+builder.cropVerticalAlign = VerticalAlignBottom;
+builder.cropHorizontalAlign = HorizontalAlignRight;
+builder.resizeSize = ResizeSizeMake(40,40);
 [builder toUrl];
 // Produces: /unsafe/5x5:195x195/right/bottom/95x95/example.com/image.png
 
 OCThumborURLBuilder *builder = [thumbor buildImage:@"example.com/background.png"];
-[builder resizeWidth:200 height:100];
-[builder filter:
-	th_roundCorner(10),
-	th_quality(85),
-	nil
-];
+builder.resizeSize = ResizeSizeMake(200,100);
+builder.filter = @[roundCorner(10),quality(85)];
 [builder toUrl];
 // Produces: /unsafe/200x100/filters:round_corner(10,255,255,255):quality(85)/example.com/background.png
 ```
