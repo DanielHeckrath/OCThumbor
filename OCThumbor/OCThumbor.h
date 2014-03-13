@@ -111,13 +111,13 @@ typedef NS_ENUM(NSUInteger, ImageFormat) {
     ImageFormatWebp
 };
 
-typedef struct CropEdgeInsets {
-    int top, left, bottom, right;  // specify amount to inset (positive) for each of the edges.
-} CropEdgeInsets;
+typedef struct CropRect {
+    int top, left, bottom, right;  // specify top-left and bottom-right crop point.
+} CropRect;
 
-THUMBOR_INLINE CropEdgeInsets CropEdgeInsetsMake(CGFloat top, CGFloat left, CGFloat bottom, CGFloat right) {
-    CropEdgeInsets insets = {top, left, bottom, right};
-    return insets;
+THUMBOR_INLINE CropRect CropRectMake(CGFloat top, CGFloat left, CGFloat bottom, CGFloat right) {
+    CropRect rect = {top, left, bottom, right};
+    return rect;
 }
 
 typedef struct ResizeSize {
@@ -148,9 +148,9 @@ THUMBOR_EXTERN const int THUMBOR_ORIGINAL_SIZE;
 @property (nonatomic, assign) BOOL flipHorizontally;
 @property (nonatomic, assign) BOOL fitIn;
 
-@property (nonatomic, assign) CropEdgeInsets cropEdgeInsets;
-@property (nonatomic, assign) VerticalAlign cropVerticalAlign;
-@property (nonatomic, assign) HorizontalAlign cropHorizontalAlign;
+@property (nonatomic, assign) CropRect cropRect;
+@property (nonatomic, assign) VerticalAlign verticalAlign;
+@property (nonatomic, assign) HorizontalAlign horizontalAlign;
 @property (nonatomic, assign) BOOL smart;
 
 @property (nonatomic, assign) TrimPixelColor trimPixelColor;

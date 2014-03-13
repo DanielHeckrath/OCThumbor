@@ -66,8 +66,8 @@ NSString * const IMAGE_FORMAT_WEBP  = @"webp";
         _key = key;
         _image = image;
         
-        _cropVerticalAlign = VerticalAlignNone;
-        _cropHorizontalAlign = HorizontalAlignNone;
+        _verticalAlign = VerticalAlignNone;
+        _horizontalAlign = HorizontalAlignNone;
         _trimPixelColor = TrimPixelColorNone;
     }
     return self;
@@ -113,30 +113,30 @@ NSString * const IMAGE_FORMAT_WEBP  = @"webp";
     _fitIn = fitIn;
 }
 
-- (void)setCropEdgeInsets:(CropEdgeInsets)cropEdgeInsets {
-    if (cropEdgeInsets.top < 0) {
+- (void)setCropRect:(CropRect)cropRect {
+    if (cropRect.top < 0) {
         @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"Top must be greater or equal to zero." userInfo:nil];
     }
-    if (cropEdgeInsets.left < 0) {
+    if (cropRect.left < 0) {
         @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"Left must be greater or equal to zero." userInfo:nil];
     }
-    if (cropEdgeInsets.bottom < 1 || cropEdgeInsets.bottom <= cropEdgeInsets.top) {
+    if (cropRect.bottom < 1 || cropRect.bottom <= cropRect.top) {
         @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"Bottom must be greater than zero and top." userInfo:nil];
     }
-    if (cropEdgeInsets.right < 1 || cropEdgeInsets.right <= cropEdgeInsets.left) {
+    if (cropRect.right < 1 || cropRect.right <= cropRect.left) {
         @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"Right must be greater than zero and left." userInfo:nil];
     }
     
     _hasCrop = YES;
-    _cropEdgeInsets = cropEdgeInsets;
+    _cropRect = cropRect;
 }
 
-- (void)setCropVerticalAlign:(VerticalAlign)cropVerticalAlign {
-    if (cropVerticalAlign != VerticalAlignNone && !_hasCrop) {
+- (void)setVerticalAlign:(VerticalAlign)verticalAlign {
+    if (verticalAlign != VerticalAlignNone && !_hasResize) {
         @throw [NSException exceptionWithName:NSInternalInconsistencyException reason:@"Image must be cropped first in order to align." userInfo:nil];
     }
     
-    _cropVerticalAlign = cropVerticalAlign;
+    _verticalAlign = verticalAlign;
 }
 
 - (NSString *)stringFromVerticalAlign:(VerticalAlign)verticalAlign {
@@ -156,12 +156,12 @@ NSString * const IMAGE_FORMAT_WEBP  = @"webp";
     }
 }
 
-- (void)setCropHorizontalAlign:(HorizontalAlign)cropHorizontalAlign {
-    if (cropHorizontalAlign != HorizontalAlignNone && !_hasCrop) {
+- (void)setHorizontalAlign:(HorizontalAlign)horizontalAlign {
+    if (horizontalAlign != HorizontalAlignNone && !_hasResize) {
         @throw [NSException exceptionWithName:NSInternalInconsistencyException reason:@"Image must be cropped first in order to align." userInfo:nil];
     }
     
-    _cropHorizontalAlign = cropHorizontalAlign;
+    _horizontalAlign = horizontalAlign;
 }
 
 - (NSString *)stringFromHorizontalAlign:(HorizontalAlign)horizontalAlign {
@@ -182,7 +182,7 @@ NSString * const IMAGE_FORMAT_WEBP  = @"webp";
 }
 
 - (void)setSmart:(BOOL)smart {
-    if (smart && !_hasCrop) {
+    if (smart && !_hasResize) {
         @throw [NSException exceptionWithName:NSInternalInconsistencyException reason:@"Image must be cropped first in order to align." userInfo:nil];
     }
     
@@ -300,19 +300,7 @@ NSString * const IMAGE_FORMAT_WEBP  = @"webp";
     }
     
     if (_hasCrop) {
-        [builder appendFormat:@"%dx%d:%dx%d", _cropEdgeInsets.left, _cropEdgeInsets.top, _cropEdgeInsets.right, _cropEdgeInsets.bottom];
-        
-        if (_smart) {
-            [builder appendFormat:@"/%@", THUMBOR_PART_SMART];
-        } else {
-            if (_cropHorizontalAlign != HorizontalAlignNone) {
-                [builder appendFormat:@"/%@", [self stringFromHorizontalAlign:_cropHorizontalAlign]];
-            }
-            if (_cropVerticalAlign != HorizontalAlignNone) {
-                [builder appendFormat:@"/%@", [self stringFromVerticalAlign:_cropVerticalAlign]];
-            }
-        }
-        [builder appendString:@"/"];
+        [builder appendFormat:@"%dx%d:%dx%d/", _cropRect.left, _cropRect.top, _cropRect.right, _cropRect.bottom];
     }
     
     if (_hasResize) {
@@ -335,6 +323,16 @@ NSString * const IMAGE_FORMAT_WEBP  = @"webp";
             [builder appendString:@"orig"];
         } else {
             [builder appendFormat:@"%d", _resizeSize.height];
+        }
+        if (_smart) {
+            [builder appendFormat:@"/%@", THUMBOR_PART_SMART];
+        } else {
+            if (_horizontalAlign != HorizontalAlignNone) {
+                [builder appendFormat:@"/%@", [self stringFromHorizontalAlign:_horizontalAlign]];
+            }
+            if (_verticalAlign != HorizontalAlignNone) {
+                [builder appendFormat:@"/%@", [self stringFromVerticalAlign:_verticalAlign]];
+            }
         }
         [builder appendString:@"/"];
     }

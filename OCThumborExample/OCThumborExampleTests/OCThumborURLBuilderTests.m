@@ -43,7 +43,7 @@
     NSString *expected = @"/unsafe/10x10:90x90/40x40/filters:watermark(/unsafe/20x20/b.com/c.jpg,10,10,0):round_corner(5,255,255,255)/a.com/b.png";
     
     OCThumborURLBuilder *builder = [_unsafe buildImage:@"a.com/b.png"];
-    builder.cropEdgeInsets = CropEdgeInsetsMake(10, 10, 90, 90);
+    builder.cropRect = CropRectMake(10, 10, 90, 90);
     builder.resizeSize = ResizeSizeMake(40, 40);
     
     OCThumborURLBuilder *watermark = [_unsafe buildImage:@"b.com/c.jpg"];
@@ -61,7 +61,7 @@
     
     OCThumborURLBuilder *builder = [_safe buildImage:@"a.com/b.png"];
     
-    builder.cropEdgeInsets = CropEdgeInsetsMake(10, 10, 90, 90);
+    builder.cropRect = CropRectMake(10, 10, 90, 90);
     builder.resizeSize = ResizeSizeMake(40, 40);
     
     OCThumborURLBuilder *watermark = [_unsafe buildImage:@"b.com/c.jpg"];
@@ -78,7 +78,7 @@
     NSString *expected = @"/xrUrWUD_ZhogPh-rvPF5VhgWENCgh-mzknoAEZ7dcX_xa7sjqP1ff9hQQq_ORAKmuCr5pyyU3srXG7BUdWUzBqp3AIucz8KiGsmHw1eFe4SBWhp1wSQNG49jSbbuHaFF_4jy5oV4Nh821F4yqNZfe6CIvjbrr1Vw2aMPL4bE7VCHBYE9ukKjVjLRiW3nLfih/a.com/b.png";
     
     OCThumborURLBuilder *builder = [_safe buildImage:@"a.com/b.png"];
-    builder.cropEdgeInsets = CropEdgeInsetsMake(10, 10, 90, 90);
+    builder.cropRect = CropRectMake(10, 10, 90, 90);
     builder.resizeSize = ResizeSizeMake(40, 40);
     
     OCThumborURLBuilder *watermark = [_unsafe buildImage:@"b.com/c.jpg"];
@@ -176,24 +176,24 @@
 - (void)testCrop {
     OCThumborURLBuilder *image = [_unsafe buildImage:@"a.com/b.png"];
     XCTAssertFalse(image.hasCrop);
-    image.cropEdgeInsets = CropEdgeInsetsMake(1, 2, 3, 4);
+    image.cropRect = CropRectMake(1, 2, 3, 4);
     XCTAssertTrue(image.hasCrop);
-    XCTAssertEqual(image.cropEdgeInsets.top, 1);
-    XCTAssertEqual(image.cropEdgeInsets.left, 2);
-    XCTAssertEqual(image.cropEdgeInsets.bottom, 3);
-    XCTAssertEqual(image.cropEdgeInsets.right, 4);
+    XCTAssertEqual(image.cropRect.top, 1);
+    XCTAssertEqual(image.cropRect.left, 2);
+    XCTAssertEqual(image.cropRect.bottom, 3);
+    XCTAssertEqual(image.cropRect.right, 4);
     XCTAssertTrue([[image toUrl] isEqualToString:@"/unsafe/2x1:4x3/a.com/b.png"]);
 }
 
-- (void)testCropAndSmart {
+- (void)testResizeAndSmart {
     OCThumborURLBuilder *image = [_unsafe buildImage:@"http://a.com/b.png"];
-    image.cropEdgeInsets = CropEdgeInsetsMake(1, 2, 3, 4);
+    image.resizeSize = ResizeSizeMake(100, 200);
     XCTAssertFalse(image.smart);
     image.smart = YES;
     XCTAssertTrue(image.smart);
     
     NSString *actual = [image toUrl];
-    NSString *expected = @"/unsafe/2x1:4x3/smart/http://a.com/b.png";
+    NSString *expected = @"/unsafe/100x200/smart/http://a.com/b.png";
     XCTAssertTrue([actual isEqualToString:expected], @"Actual: %@ - Expected: %@", actual, expected);
 }
 
@@ -227,9 +227,9 @@
     XCTAssertFalse(image.fitIn);
 }
 
-- (void)testCannotSmartWithoutCrop {
+- (void)testCannotSmartWithoutResize {
     OCThumborURLBuilder *image = [_unsafe buildImage:@"http://a.com/b.png"];
-    XCTAssertFalse(image.hasCrop);
+    XCTAssertFalse(image.hasResize);
     XCTAssertFalse(image.smart);
     
     XCTAssertThrows([image setSmart:YES]);
@@ -248,25 +248,25 @@
     XCTAssertTrue([[image toUrl] isEqualToString:@"/unsafe/trim:top-left:100/http://a.com/b.png"]);
 }
 
-- (void)testCannotAlignWithoutCrop {
+- (void)testCannotAlignWithoutResize {
     OCThumborURLBuilder *image = [_unsafe buildImage:@"http://a.com/b.png"];
-    XCTAssertFalse(image.hasCrop);
-    XCTAssertEqual(image.cropHorizontalAlign, HorizontalAlignNone);
-    XCTAssertEqual(image.cropVerticalAlign, VerticalAlignNone);
+    XCTAssertFalse(image.hasResize);
+    XCTAssertEqual(image.horizontalAlign, HorizontalAlignNone);
+    XCTAssertEqual(image.verticalAlign, VerticalAlignNone);
     
-    XCTAssertThrows([image setCropHorizontalAlign:HorizontalAlignCenter], @"Allowed horizontal crop align without crop.");
-    XCTAssertThrows([image setCropVerticalAlign:VerticalAlignMiddle], @"Allowed vertical crop align without crop.");
+    XCTAssertThrows([image setHorizontalAlign:HorizontalAlignCenter], @"Allowed horizontal crop align without crop.");
+    XCTAssertThrows([image setVerticalAlign:VerticalAlignMiddle], @"Allowed vertical crop align without crop.");
 }
 
 - (void)testCannotIssueBadCrop {
     OCThumborURLBuilder *image = [_unsafe buildImage:@"http://a.com/b.png"];
     
-    XCTAssertThrows([image setCropEdgeInsets:CropEdgeInsetsMake(-1, 0, 1, 1)], @"Bad top value allowed.");
-    XCTAssertThrows([image setCropEdgeInsets:CropEdgeInsetsMake(0, -1, 1, 1)], @"Bad left value allowed.");
-    XCTAssertThrows([image setCropEdgeInsets:CropEdgeInsetsMake(0, 0, -1, 1)], @"Bad bottom value allowed.");
-    XCTAssertThrows([image setCropEdgeInsets:CropEdgeInsetsMake(0, 0, 1, -1)], @"Bad right value allowed.");
-    XCTAssertThrows([image setCropEdgeInsets:CropEdgeInsetsMake(0, 1, 1, 0)], @"Right value less than left value allowed.");
-    XCTAssertThrows([image setCropEdgeInsets:CropEdgeInsetsMake(1, 0, 0, 1)], @"Bottom value less than top value allowed.");
+    XCTAssertThrows([image setCropRect:CropRectMake(-1, 0, 1, 1)], @"Bad top value allowed.");
+    XCTAssertThrows([image setCropRect:CropRectMake(0, -1, 1, 1)], @"Bad left value allowed.");
+    XCTAssertThrows([image setCropRect:CropRectMake(0, 0, -1, 1)], @"Bad bottom value allowed.");
+    XCTAssertThrows([image setCropRect:CropRectMake(0, 0, 1, -1)], @"Bad right value allowed.");
+    XCTAssertThrows([image setCropRect:CropRectMake(0, 1, 1, 0)], @"Right value less than left value allowed.");
+    XCTAssertThrows([image setCropRect:CropRectMake(1, 0, 0, 1)], @"Bottom value less than top value allowed.");
 }
 
 - (void)testCannotIssueBadResize {
