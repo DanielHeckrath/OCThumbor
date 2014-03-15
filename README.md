@@ -23,19 +23,19 @@ builder.resizeSize = ResizeSizeMake(48,48);
 // Produces: /unsafe/48x48/example.com/image.png
 
 OCThumborURLBuilder *builder = [thumbor buildImage:@"example.com/image.png"];
-builder.cropEdgeInsets = CropEdgeInsetsMake(10,10,90,90);
+builder.cropRect = CropRectMake(10,10,90,90);
 builder.resizeSize = ResizeSizeMake(40,40);
 builder.smart = YES;
 [builder toUrl];
 // Produces: /unsafe/10x10:90x90/smart/40x40/example.com/image.png
 
 OCThumborURLBuilder *builder = [thumbor buildImage:@"example.com/image.png"];
-builder.cropEdgeInsets = CropEdgeInsetsMake(10,10,90,90);
-builder.cropVerticalAlign = VerticalAlignBottom;
-builder.cropHorizontalAlign = HorizontalAlignRight;
+builder.cropRect = CropRectMake(10,10,90,90);
+builder.verticalAlign = VerticalAlignBottom;
+builder.horizontalAlign = HorizontalAlignRight;
 builder.resizeSize = ResizeSizeMake(40,40);
 [builder toUrl];
-// Produces: /unsafe/5x5:195x195/right/bottom/95x95/example.com/image.png
+// Produces: /unsafe/5x5:195x195/95x95/right/bottom/example.com/image.png
 
 OCThumborURLBuilder *builder = [thumbor buildImage:@"example.com/background.png"];
 builder.resizeSize = ResizeSizeMake(200,100);
